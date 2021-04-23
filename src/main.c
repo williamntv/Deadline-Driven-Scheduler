@@ -1,146 +1,14 @@
-/*
- FreeRTOS V9.0.0 - Copyright (C) 2016 Real Time Engineers Ltd.
- All rights reserved
-
- VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
-
- This file is part of the FreeRTOS distribution.
-
- FreeRTOS is free software; you can redistribute it and/or modify it under
- the terms of the GNU General Public License (version 2) as published by the
- Free Software Foundation >>>> AND MODIFIED BY <<<< the FreeRTOS exception.
-
- ***************************************************************************
- >>!   NOTE: The modification to the GPL is included to allow you to     !<<
- >>!   distribute a combined work that includes FreeRTOS without being   !<<
- >>!   obliged to provide the source code for proprietary components     !<<
- >>!   outside of the FreeRTOS kernel.                                   !<<
- ***************************************************************************
-
- FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
- WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- FOR A PARTICULAR PURPOSE.  Full license text is available on the following
- link: http://www.freertos.org/a00114.html
-
- ***************************************************************************
- *                                                                       *
- *    FreeRTOS provides completely free yet professionally developed,    *
- *    robust, strictly quality controlled, supported, and cross          *
- *    platform software that is more than just the market leader, it     *
- *    is the industry's de facto standard.                               *
- *                                                                       *
- *    Help yourself get started quickly while simultaneously helping     *
- *    to support the FreeRTOS project by purchasing a FreeRTOS           *
- *    tutorial book, reference manual, or both:                          *
- *    http://www.FreeRTOS.org/Documentation                              *
- *                                                                       *
- ***************************************************************************
-
- http://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
- the FAQ page "My application does not run, what could be wwrong?".  Have you
- defined configASSERT()?
-
- http://www.FreeRTOS.org/support - In return for receiving this top quality
- embedded software for free we request you assist our global community by
- participating in the support forum.
-
- http://www.FreeRTOS.org/training - Investing in training allows your team to
- be as productive as possible as early as possible.  Now you can receive
- FreeRTOS training directly from Richard Barry, CEO of Real Time Engineers
- Ltd, and the world's leading authority on the world's leading RTOS.
-
- http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
- including FreeRTOS+Trace - an indispensable productivity tool, a DOS
- compatible FAT file system, and our tiny thread aware UDP/IP stack.
-
- http://www.FreeRTOS.org/labs - Where new FreeRTOS products go to incubate.
- Come and try FreeRTOS+TCP, our new open source TCP/IP stack for FreeRTOS.
-
- http://www.OpenRTOS.com - Real Time Engineers ltd. license FreeRTOS to High
- Integrity Systems ltd. to sell under the OpenRTOS brand.  Low cost OpenRTOS
- licenses offer ticketed support, indemnification and commercial middleware.
-
- http://www.SafeRTOS.com - High Integrity Systems also provide a safety
- engineered and independently SIL3 certified version for use in safety and
- mission critical applications that require provable dependability.
-
- 1 tab == 4 spaces!
- */
-
-/*
- FreeRTOS is a market leading RTOS from Real Time Engineers Ltd. that supports
- 31 architectures and receives 77500 downloads a year. It is professionally
- developed, strictly quality controlled, robust, supported, and free to use in
- commercial products without any requirement to expose your proprietary source
- code.
-
- This simple FreeRTOS demo does not make use of any IO ports, so will execute on
- any Cortex-M3 of Cortex-M4 hardware.  Look for TODO markers in the code for
- locations that may require tailoring to, for example, include a manufacturer
- specific header file.
-
- This is a starter project, so only a subset of the RTOS features are
- demonstrated.  Ample source comments are provided, along with web links to
- relevant pages on the http://www.FreeRTOS.org site.
-
- Here is a description of the project's functionality:
-
- The main() Function:
- main() creates the tasks and software timers described in this section, before
- starting the scheduler.
-
- The Queue Send Task:
- The queue send task is implemented by the prvQueueSendTask() function.
- The task uses the FreeRTOS vTaskDelayUntil() and xQueueSend() API functions to
- periodically send the number 100 on a queue.  The period is set to 200ms.  See
- the comments in the function for more details.
- http://www.freertos.org/vtaskdelayuntil.html
- http://www.freertos.org/a00117.html
-
- The Queue Receive Task:
- The queue receive task is implemented by the prvQueueReceiveTask() function.
- The task uses the FreeRTOS xQueueReceive() API function to receive values from
- a queue.  The values received are those sent by the queue send task.  The queue
- receive task increments the ulCountOfItemsReceivedOnQueue variable each time it
- receives the value 100.  Therefore, as values are sent to the queue every 200ms,
- the value of ulCountOfItemsReceivedOnQueue will increase by 5 every second.
- http://www.freertos.org/a00118.html
-
- An example software timer:
- A software timer is created with an auto reloading period of 1000ms.  The
- timer's callback function increments the ulCountOfTimerCallbackExecutions
- variable each time it is called.  Therefore the value of
- ulCountOfTimerCallbackExecutions will count seconds.
- http://www.freertos.org/RTOS-software-timer.html
-
- The FreeRTOS RTOS tick hook (or callback) function:
- The tick hook function executes in the context of the FreeRTOS tick interrupt.
- The function 'gives' a semaphore every 500th time it executes.  The semaphore
- is used to synchronise with the event semaphore task, which is described next.
-
- The event semaphore task:
- The event semaphore task uses the FreeRTOS xSemaphoreTake() API function to
- wait for the semaphore that is given by the RTOS tick hook function.  The task
- increments the ulCountOfReceivedSemaphores variable each time the semaphore is
- received.  As the semaphore is given every 500ms (assuming a tick frequency of
- 1KHz), the value of ulCountOfReceivedSemaphores will increase by 2 each second.
-
- The idle hook (or callback) function:
- The idle hook function queries the amount of free FreeRTOS heap space available.
- See vApplicationIdleHook().
-
- The malloc failed and stack overflow hook (or callback) functions:
- These two hook functions are provided as examples, but do not contain any
- functionality.
- */
-
 /* Standard includes. */
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <inttypes.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <inttypes.h>
+
+/* STM/RTOS includes. */
 #include "stm32f4_discovery.h"
+
 /* Kernel includes. */
 #include "stm32f4xx.h"
 #include "../FreeRTOS_Source/include/FreeRTOS.h"
@@ -150,64 +18,79 @@
 #include "../FreeRTOS_Source/include/timers.h"
 
 /*-----------------------------------------------------------*/
-
-#define mainQUEUE_LENGTH 					100
-
 // Hardware defines
 #define amber_led   						LED3
 #define green_led   						LED4
 #define red_led     						LED5
 #define blue_led    						LED6
 
-#define HYPER_PERIOD						1500
+#define HYPER_PERIOD						15000
 
-#define USER_DEFINED_TASK1_ID				1
-#define USER_DEFINED_TASK2_ID				2
-#define USER_DEFINED_TASK3_ID				3
-#define USER_DEFINED_NON_PERIODIC_TASK_ID	4
+# define TASK_LOWEST_PRIORITY      			1
+# define TASK_MONITOR_PRIORITY				2
+# define TASK_EXECUTION_PRIORITY 			3
+# define TASK_GENERATOR_PRIORITY      		4
+# define TASK_SCHEDULER_PRIORITY      		5
 
-typedef enum boolean
-{
-	FALSE = 0,
-	TRUE
-} boolean_t;
+#define schedulerQUEUE_LENGTH				20
+#define monitorQUEUE_LENGTH 				3
+#define taskgeneratorQUEUE_LENGTH			3
+#define taskQUEUE_LENGTH					1
+
+#define TASK1_ID							1
+#define TASK2_ID							2
+#define TASK3_ID							3
+#define APERIODIC_TASK_ID					4
+
+#define TASK_1_EXECUTION_TIME				950
+#define TASK_2_EXECUTION_TIME				1500
+#define TASK_3_EXECUTION_TIME				2500
+#define APERIODIC_TASK_EXECUTION_TIME		5000
+
+#define TASK_1_PERIOD						9000
+#define TASK_2_PERIOD						5000
+#define TASK_3_PERIOD						7500
+#define APERIODIC_TASK_PERIOD				3000
+
+#define	TASK_1_TIMER						1
+#define	TASK_2_TIMER						2
+#define	TASK_3_TIMER						3
+#define	APERIODIC_TASK_TIMER				4
 
 // Deadline-Driven task data structure
 typedef enum task_type
 {
 	UNDEFINED,
 	PERIODIC,
-	NON_PERIODIC
+	APERIODIC
 } task_type_t;
 
-typedef enum task_timer
+typedef struct dd_task_info
 {
-	TASK_TIMER_1,
-	TASK_TIMER_2,
-	TASK_TIMER_3,
-	NON_PERIODIC_TASK_TIMER
-} task_timer_t;
-
-typedef struct dd_task
-{
-	TaskHandle_t t_handle;
+	TaskHandle_t task_handle;
+	TimerHandle_t timer_handle;
 	task_type_t type;
 	uint32_t task_id;
 	uint32_t release_time;
 	uint32_t completion_time;
+	uint32_t overdue_time;
 	uint32_t absolute_deadline;
-} dd_task_t;
+} dd_task_info_t;
 
-typedef struct dd_task_list
+typedef struct dd_task_node
 {
-	dd_task_t task;
-	struct dd_task_list *next_task;
-} dd_task_list_t;
+	dd_task_info_t *pnode;
+	struct dd_task_node *pnext_node;
+} dd_task_node_t;
+
+dd_task_node_t *pActive_list_head = NULL;
+dd_task_node_t *pCompletion_list_head = NULL;
+dd_task_node_t *pOverdue_list_head = NULL;
 
 typedef enum dd_message_type
 {
-	RELEASE_DD_TASK,
-	DD_TASK_COMPLETED,
+	RELEASE_TASK = 0,
+	COMPLETED_TASK,
 	GET_ACTIVE_DD_TASK_LIST,
 	GET_COMPLETED_DD_TASK_LIST,
 	GET_OVERDUE_DD_TASK_lIST
@@ -216,7 +99,8 @@ typedef enum dd_message_type
 typedef struct dd_message
 {
 	dd_message_type_t message_type;
-	void* message_data;
+	dd_task_info_t *ptask_info;
+	dd_task_node_t *ptask_list;
 } dd_message_t;
 
 /*
@@ -225,159 +109,100 @@ typedef struct dd_message
  */
 static void prvSetupHardware(void);
 
-dd_task_t *dd_task_allocate();
-bool dd_task_free(dd_task_t *task_remove);
+static void dd_task_scheduler(void *pvParameters);
+static void dd_task_monitor(void *pvParameters);
 
-static void vPeriodicTask1GeneratorTimerCallBack(xTimerHandle xTimer);
-static void vPeriodicTask2GeneratorTimerCallBack(xTimerHandle xTimer);
-static void vPeriodicTask3GeneratorTimerCallBack(xTimerHandle xTimer);
-static void vNonPeriodicTaskGeneratorTimerCallBack(xTimerHandle xTimer);
+static void dd_task_generator_1(void *pvParameters);
+static void dd_task_generator_2(void *pvParameters);
+static void dd_task_generator_3(void *pvParameters);
 
-static void dd_generator_periodic_task_1(void *pvParameters);
-static void dd_generator_periodic_task_2(void *pvParameters);
-static void dd_generator_periodic_task_3(void *pvParameters);
-static void dd_generator_non_periodic_task(void *pvParameters);
+static void vTaskTimerCallBack(xTimerHandle xTimer);
 
 static void dd_user_defined_task_1(void *pvParameters);
 static void dd_user_defined_task_2(void *pvParameters);
 static void dd_user_defined_task_3(void *pvParameters);
-static void dd_user_defined_non_periodic_task(void *pvParameters);
 
 // functions declaration
-void release_dd_task(TaskHandle_t t_handle, task_type_t type, uint32_t task_id, uint32_t absolute_deadline);
-void dd_task_completed(uint32_t task_id);
-dd_task_list_t **get_active_dd_task_list(void);
-dd_task_list_t **get_complete_dd_task_list(void);
-dd_task_list_t **get_overdue_dd_task_list(void);
+dd_task_info_t *pCreate_dd_task_info(TaskHandle_t task_handle, task_type_t type, uint32_t task_id, uint32_t absolute_deadline);
+void delete_dd_task_info(dd_task_info_t *ptask_info);
+void release_dd_task_info(dd_task_info_t *ptask_info);
+void dd_task_completed(dd_task_info_t *ptask_info);
+dd_task_node_t **pGetActiveDDTaskList(void);
+dd_task_node_t **pGetCompletedDDTaskList(void);
+dd_task_node_t **pGetOverdueDDTaskList(void);
 
-void active_dd_task_list();
-void complete_dd_task_list();
-void overdue_dd_task_list();
-
-// declare four tasks that share several resources that help complete the objectives
-// of controlling the traffic light and car movement
-static void dd_scheduler_task(void *pvParameters);
-
-static void dd_system_monitor_task(void *pvParameters);
-void dd_system_monitor_display_active_task_list(void);
-void dd_system_monitor_display_completed_task_list(void);
-void dd_system_monitor_display_overdue_task_list(void);
+dd_task_node_t *insert_new_node_to_active_list(dd_task_info_t *ptask_info);
+dd_task_node_t *insert_new_node_to_completed_list(dd_task_info_t *ptask_info);
+dd_task_node_t *insert_new_node_to_overdue_list(dd_task_info_t *ptask_info);
+uint32_t active_list_length();
+void sort_active_list_by_deadline(dd_task_info_t *ptask_info);
+dd_task_node_t *pFind_completed_task_node_by_time_stamp(dd_task_info_t *ptask_info);
+//dd_task_node_t *pFind_completed_task_node_by_time_stamp(uint32_t time_stamp);
+dd_task_node_t *pFind_overdue_task_node_using_time_stamp(uint32_t time_stamp);
+dd_task_node_t *pRemove_completed_task_node_by_time_stamp(dd_task_info_t *ptask_info);
+//dd_task_node_t *pRemove_overdue_task_node_by_time_stamp(uint32_t time_stamp);
+//dd_task_node_t *pRemove_completed_task_node_by_time_stamp(uint32_t time_stamp);
+void printActiveList();
+void printCompletedList();
+void printOverdueList();
 
 void EXTI0_IRQHandler(void);
 
-// create new queue instances and return handles for
-// a car generated, traffic flow rate, traffic light color, and traffic display
-xQueueHandle dd_task_generator_message_queue;
-xQueueHandle dd_scheduler_message_queue;
-xQueueHandle dd_monitor_message_queue;
+//QueueHandle_t dd_task_message_queue;
+QueueHandle_t dd_scheduler_message_queue;
+QueueHandle_t dd_monitor_message_queue;
 
-TaskHandle_t user_defined_periodic_task_1_handle = NULL;
-TaskHandle_t user_defined_periodic_task_2_handle = NULL;
-TaskHandle_t user_defined_periodic_task_3_handle = NULL;
-TaskHandle_t user_defined_non_periodic_task_handle = NULL;
+TaskHandle_t dd_task_generator_1_handle = NULL;
+TaskHandle_t dd_task_generator_2_handle = NULL;
+TaskHandle_t dd_task_generator_3_handle = NULL;
 
-xTimerHandle xPeriodicTask1Timer;
-xTimerHandle xPeriodicTask2Timer;
-xTimerHandle xPeriodicTask3Timer;
-xTimerHandle xNonPeriodicTaskTimer;
+//TaskHandle_t dd_aperiodic_task_generator_handle = NULL;
+//TaskHandle_t user_defined_aperiodic_task_handle = NULL;
+//TimerHandle_t xAperiodicTimer;
+//static void dd_aperiodic_task_generator(void *pvParameters);
+//static void dd_user_defined_aperiodic_task(void *pvParameters);
+//static void vAperiodicTaskTimerCallBack(xTimerHandle xTimer);
 
 /*-----------------------------------------------------------*/
-
 int main(void)
 {
-	/* call config functions to initialize system clock, GPIO, and ADC */
-
-	/* Configure the system ready to run the demo.  The clock configuration
-	 can be done here if it was not done before main() was called. */
+	// Configure the system ready to run the demo.  The clock configuration
+	// can be done here if it was not done before main() was called
 	prvSetupHardware();
 
-	/* Ensure all priority bits are assigned as preemption priority bits.
-	    http://www.freertos.org/RTOS-Cortex-M3-M4.html */
+	// Ensure all priority bits are assigned as preemption priority bits.
+	// http://www.freertos.org/RTOS-Cortex-M3-M4.html
 	NVIC_SetPriorityGrouping(0);
 
-    /* Initialize LEDs */
-    STM_EVAL_LEDInit(amber_led);
-    STM_EVAL_LEDInit(green_led);
-    STM_EVAL_LEDInit(red_led);
-    STM_EVAL_LEDInit(blue_led);
+	/* Initialize LEDs */
+	STM_EVAL_LEDInit(amber_led);
+	STM_EVAL_LEDInit(green_led);
+	STM_EVAL_LEDInit(red_led);
+	STM_EVAL_LEDInit(blue_led);
 
-    // Initialize the pushbutton (either GPIO: BUTTON_MODE_GPIO or external interrupt: BUTTON_MODE_EXTI)
-    STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
-    NVIC_SetPriority(USER_BUTTON_EXTI_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1); // Must be above configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY
+	// Initialize the pushbutton (either GPIO: BUTTON_MODE_GPIO or external interrupt: BUTTON_MODE_EXTI)
+	STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI);
+	NVIC_SetPriority(USER_BUTTON_EXTI_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1); // Must be above configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY
+
+	printf("Initialize message queue\n\n");
 
 	// Create the queues used by the queue send and queue receive tasks.
-	// queues have equal length of 100 elements
-    dd_task_generator_message_queue = xQueueCreate(mainQUEUE_LENGTH, sizeof(task_timer_t));
-	dd_scheduler_message_queue = xQueueCreate(mainQUEUE_LENGTH, sizeof(dd_message_t));
-	dd_monitor_message_queue = xQueueCreate(mainQUEUE_LENGTH, sizeof(dd_message_t));
+	dd_scheduler_message_queue = xQueueCreate(schedulerQUEUE_LENGTH, sizeof(dd_message_t));
+	dd_monitor_message_queue = xQueueCreate(monitorQUEUE_LENGTH, sizeof(dd_message_t));
 
-	/* Add to the registry, for the benefit of kernel aware debugging. */
-	vQueueAddToRegistry(dd_task_generator_message_queue, "DDTaskGeneratorMessageQueue");
+	// Add to the registry, for the benefit of kernel aware debugging.
 	vQueueAddToRegistry(dd_scheduler_message_queue, "DDSchedulerMessageQueue");
 	vQueueAddToRegistry(dd_monitor_message_queue, "DDMonitorMessageQueue");
 
-	// Deadline-Driven Scheduler (DDS): dynamically changing the priorities of user-defined FreeRTOS tasks
-	// DDS uses an actively-managed list of:
-	// -	Periodically-generated Deadline-Driven tasks
-	// -	Non-periodically-generated Deadline-Driven tasks
-	//
-	// If a DD task needs to be scheduled and its deadline is the earliest, the DD scheduler will:
-	// -	Set the priority of the FreeRTOS task referenced by the DD task to 'HIGH'
-	// -	Set the priorities of other FreeRTOS tasks referenced by other DD tasks to 'LOW'
-	//
-	// Result: native FreeRTOS scheduler only executes a single user-defined FreeRTOS task with earliest DD-task deadline
-	// due to higher priority over other user-defined FreeRTOS tasks
-	xTaskCreate(dd_scheduler_task, "Deadline Driven Scheduler Task", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
+	xTaskCreate(dd_task_scheduler, "DDTaskScheduler", configMINIMAL_STACK_SIZE, NULL, TASK_SCHEDULER_PRIORITY, NULL);
+	xTaskCreate(dd_task_monitor, "DDTaskMonitor", configMINIMAL_STACK_SIZE, NULL, TASK_MONITOR_PRIORITY, NULL);
 
-	// Periodically creates DD tasks to be scheduled by the DD scheduler
+	xTaskCreate(dd_task_generator_1, "DDTaskGenerator1", configMINIMAL_STACK_SIZE, NULL, TASK_GENERATOR_PRIORITY, &dd_task_generator_1_handle);
+	xTaskCreate(dd_task_generator_2, "DDTaskGenerator2", configMINIMAL_STACK_SIZE, NULL, TASK_GENERATOR_PRIORITY, &dd_task_generator_2_handle);
+	xTaskCreate(dd_task_generator_3, "DDTaskGenerator3", configMINIMAL_STACK_SIZE, NULL, TASK_GENERATOR_PRIORITY, &dd_task_generator_3_handle);
+//	//xTaskCreate(dd_aperiodic_task_generator, "DDAperiodicTaskGenerator", configMINIMAL_STACK_SIZE, NULL, DD_TASK_GENERATOR_PRIORITY, &dd_aperiodic_task_generator_handle);
 
-	// Deadline-Driven Task Generator is an auxiliary FreeRTOS task
-	// -	periodically generated DD tasks
-	// -	normally suspended
-	// -	resumed when system timer callback function is trigger, so configure timer to expire based on time period of a particular DD task
-	// -	prepared all info to create specific instances of DD tasks
-	// -	called release_dd_task
-	xTaskCreate(dd_generator_periodic_task_1, "DD Generator Task 1", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	xTaskCreate(dd_generator_periodic_task_2, "DD Generator Task 2", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	xTaskCreate(dd_generator_periodic_task_3, "DD Generator Task 3", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	xTaskCreate(dd_generator_non_periodic_task, "DD Generator Non Periodic Task", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-
-	// Tasks written by user that contain actual deadline-sensitive application code
-	// User-Defined Task is an auxiliary FreeRTOS task contained:
-	// -	actual deadline-sensitive application code executed at run-time
-	// -	self-contained
-	// - 	not rely on communication with other FreeRTOS tasks
-	//
-	// User-Defined Task:
-	// - 	runs an empty loop for the duration of its execution time
-	// - 	uses on-board LEDs to provide visual indication of which user task is currently executing
-	// - 	calls complete_dd_task once it has finished
-	xTaskCreate(dd_user_defined_task_1, "DD User-Defined Task 1", configMINIMAL_STACK_SIZE, NULL, 1, user_defined_periodic_task_1_handle);
-	xTaskCreate(dd_user_defined_task_2, "DD User-Defined Task 2", configMINIMAL_STACK_SIZE, NULL, 1, user_defined_periodic_task_2_handle);
-	xTaskCreate(dd_user_defined_task_3, "DD User-Defined Task 3", configMINIMAL_STACK_SIZE, NULL, 1, user_defined_periodic_task_3_handle);
-	xTaskCreate(dd_user_defined_non_periodic_task, "DD User-Defined Non Periodic Task", configMINIMAL_STACK_SIZE, NULL, 1, user_defined_non_periodic_task_handle);
-
-	// FreeRTOS task that extracts information from the DD scheduler and report scheduling information
-
-	// Monitor Task is an auxiliary Task that reports:
-	// 1.	number of active DD tasks
-	// 2.	number of completed DD tasks
-	// 3.	number of overdue DD tasks
-	//
-	// Monitor Task:
-	// -	collects info from DD scheduler using:
-	// 		a. get_active_dd_task_list
-	// 		b. get_completed_dd_task_list
-	// 		c. get_overdue_dd_task_list
-	// -	report to users number of tasks on each list
-	// -	execute even if active and overdue tasks are active to continue collecting data and reporting system info
-	xTaskCreate(dd_system_monitor_task, "DD System Monitor Task", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-
-	// Create one-shot timers for the user-defined tasks and set the timer periods to expire after 1 tick
-	xPeriodicTask1Timer = xTimerCreate("Task 1 timer", pdMS_TO_TICKS(1), pdFALSE, (void*)0, vPeriodicTask1GeneratorTimerCallBack);
-	xPeriodicTask2Timer = xTimerCreate("Task 2 timer", pdMS_TO_TICKS(1), pdFALSE, (void*)0, vPeriodicTask2GeneratorTimerCallBack);
-	xPeriodicTask3Timer = xTimerCreate("Task 3 timer", pdMS_TO_TICKS(1), pdFALSE, (void*)0, vPeriodicTask3GeneratorTimerCallBack);
-	xNonPeriodicTaskTimer = xTimerCreate("Non-periodic Task timer", pdMS_TO_TICKS(1), pdFALSE, (void*)0, vNonPeriodicTaskGeneratorTimerCallBack);
+	printf("Done initialized message queue\n\n");
 
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
@@ -385,423 +210,778 @@ int main(void)
 	return 0;
 }
 
-dd_task_t *create_and_initialize_new_dd_task()
+dd_task_info_t *pCreate_dd_task_info(TaskHandle_t task_handle, task_type_t type, uint32_t task_id, uint32_t absolute_deadline)
 {
-	dd_task_t *new_task = (dd_task_t*)pvPortMalloc(sizeof(dd_task_t));
+	dd_task_info_t *ptask_info;
 
-	new_task->t_handle = NULL;
-	new_task->type = UNDEFINED;
-	new_task->task_id = 0;
-	new_task->release_time = 0;
-	new_task->completion_time = 0;
-	new_task->absolute_deadline = 0;
+	ptask_info = (dd_task_info_t*)pvPortMalloc(sizeof(dd_task_info_t));
 
-	return new_task;
-}
-
-bool free_dd_task(dd_task_t *task_remove)
-{
-	task_remove->t_handle = NULL;
-	task_remove->type = UNDEFINED;
-	task_remove->task_id = 0;
-	task_remove->release_time = 0;
-	task_remove->completion_time = 0;
-	task_remove->absolute_deadline = 0;
-
-	vPortFree((void*)task_remove);
-
-	return true;
-}
-
-static void vPeriodicTask1GeneratorTimerCallBack(xTimerHandle xTimer)
-{
-	task_timer_t timer_is_done = TASK_TIMER_1;
-
-	xQueueSend(dd_task_generator_message_queue, &timer_is_done, pdMS_TO_TICKS(0));
-}
-
-static void vPeriodicTask2GeneratorTimerCallBack(xTimerHandle xTimer)
-{
-	task_timer_t timer_is_done = TASK_TIMER_2;
-
-	xQueueSend(dd_task_generator_message_queue, &timer_is_done, pdMS_TO_TICKS(0));
-}
-
-static void vPeriodicTask3GeneratorTimerCallBack(xTimerHandle xTimer)
-{
-	task_timer_t timer_is_done = TASK_TIMER_3;
-
-	xQueueSend(dd_task_generator_message_queue, &timer_is_done, pdMS_TO_TICKS(0));
-}
-
-static void vNonPeriodicTaskGeneratorTimerCallBack(xTimerHandle xTimer)
-{
-	task_timer_t timer_is_done = NON_PERIODIC_TASK_TIMER;
-
-	xQueueSend(dd_task_generator_message_queue, &timer_is_done, pdMS_TO_TICKS(0));
-}
-
-// Execute the dd generator task 1 task
-static void dd_generator_periodic_task_1(void *pvParameters)
-{
-	task_timer_t timer_is_done = TASK_TIMER_1;
-	dd_task_t *generated_new_task_1;
-	TickType_t release_time_task_1;
-	uint32_t absolute_deadline_task_1 = 0;
-	uint32_t relative_deadline_task_1 = 0;
-
-	while(1)
+	if(ptask_info == NULL)
 	{
-		release_time_task_1 = xTaskGetTickCount();
-		relative_deadline_task_1 = 500; // relative deadline is the period
-		absolute_deadline_task_1 = (uint32_t)release_time_task_1 + relative_deadline_task_1;
-
-		if(xQueueReceive(dd_task_generator_message_queue, &timer_is_done, pdMS_TO_TICKS(0)) == pdTRUE)
-		{
-			generated_new_task_1 = create_and_initialize_new_dd_task();
-			generated_new_task_1->t_handle = user_defined_periodic_task_1_handle;
-			generated_new_task_1->task_id = USER_DEFINED_TASK1_ID;
-			generated_new_task_1->type = PERIODIC;
-			generated_new_task_1->release_time = release_time_task_1;
-			generated_new_task_1->absolute_deadline = absolute_deadline_task_1;
-			release_dd_task(user_defined_periodic_task_1_handle, PERIODIC, USER_DEFINED_TASK1_ID, absolute_deadline_task_1);
-		}
-
-		vTaskDelay(pdMS_TO_TICKS(HYPER_PERIOD));
+		printf("pCreate_dd_task_info: Error no memory!\n");
 	}
+
+	ptask_info->task_handle = task_handle;
+	ptask_info->type = type;
+	ptask_info->task_id = task_id;
+	ptask_info->absolute_deadline = absolute_deadline;
+
+	return ptask_info;
 }
 
-// Execute the dd generator task 2
-static void dd_generator_periodic_task_2(void *pvParameters)
+void delete_dd_task_info(dd_task_info_t *ptask_info)
 {
-	task_timer_t timer_is_done = TASK_TIMER_2;
-	dd_task_t *generated_new_task_2;
-	TickType_t release_time_task_2;
-	uint32_t absolute_deadline_task_2 = 0;
-	uint32_t relative_deadline_task_2 = 0;
-
-	while(1)
-	{
-		release_time_task_2 = xTaskGetTickCount();
-		relative_deadline_task_2 = 500;
-		absolute_deadline_task_2 = (uint32_t)release_time_task_2 + relative_deadline_task_2;
-
-		if(xQueueReceive(dd_task_generator_message_queue, &timer_is_done, pdMS_TO_TICKS(0)) == pdTRUE)
-		{
-			generated_new_task_2 = create_and_initialize_new_dd_task();
-			generated_new_task_2->t_handle = user_defined_periodic_task_2_handle;
-			generated_new_task_2->task_id = USER_DEFINED_TASK2_ID;
-			generated_new_task_2->type = PERIODIC;
-			generated_new_task_2->release_time = release_time_task_2;
-			generated_new_task_2->absolute_deadline = absolute_deadline_task_2;
-			release_dd_task(user_defined_periodic_task_2_handle, PERIODIC, USER_DEFINED_TASK2_ID, absolute_deadline_task_2);
-		}
-
-		vTaskDelay(pdMS_TO_TICKS(HYPER_PERIOD));
-	}
-}
-
-// Execute dd generator task 3
-static void dd_generator_periodic_task_3(void *pvParameters)
-{
-	task_timer_t timer_is_done = TASK_TIMER_3;
-	dd_task_t *generated_new_task_3;
-	TickType_t release_time_task_3;
-	uint32_t absolute_deadline_task_3 = 0;
-	uint32_t relative_deadline_task_3 = 0;
-
-	while(1)
-	{
-		release_time_task_3 = xTaskGetTickCount();
-		relative_deadline_task_3 = 750;
-		absolute_deadline_task_3 = (uint32_t)release_time_task_3 + relative_deadline_task_3;
-
-		if(xQueueReceive(dd_task_generator_message_queue, &timer_is_done, pdMS_TO_TICKS(0)) == pdTRUE)
-		{
-			generated_new_task_3 = create_and_initialize_new_dd_task();
-			generated_new_task_3->t_handle = user_defined_periodic_task_3_handle;
-			generated_new_task_3->task_id = USER_DEFINED_TASK3_ID;
-			generated_new_task_3->type = PERIODIC;
-			generated_new_task_3->release_time = release_time_task_3;
-			generated_new_task_3->absolute_deadline = absolute_deadline_task_3;
-			release_dd_task(user_defined_periodic_task_3_handle, PERIODIC, USER_DEFINED_TASK3_ID, absolute_deadline_task_3);
-		}
-
-		vTaskDelay(pdMS_TO_TICKS(HYPER_PERIOD));
-	}
-}
-
-static void dd_generator_non_periodic_task(void *pvParameters)
-{
-	task_timer_t timer_is_done = NON_PERIODIC_TASK_TIMER;
-	dd_task_t *generated_new_non_periodic_task;
-	TickType_t release_time_non_periodic_task;
-	uint32_t relative_deadline_non_periodic_task = 900;
-	uint32_t absolute_deadline_non_periodic_task = 0;
-
-	while(1)
-	{
-		ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
-		release_time_non_periodic_task = xTaskGetTickCount();
-		absolute_deadline_non_periodic_task = (uint32_t)release_time_non_periodic_task + relative_deadline_non_periodic_task;
-
-		if(xQueueReceive(dd_task_generator_message_queue, &timer_is_done, pdMS_TO_TICKS(0)) == pdTRUE)
-		{
-			generated_new_non_periodic_task = create_and_initialize_new_dd_task();
-			generated_new_non_periodic_task->t_handle = user_defined_non_periodic_task_handle;
-			generated_new_non_periodic_task->task_id = USER_DEFINED_NON_PERIODIC_TASK_ID;
-			generated_new_non_periodic_task->type = NON_PERIODIC;
-			generated_new_non_periodic_task->release_time = release_time_non_periodic_task;
-			generated_new_non_periodic_task->absolute_deadline = absolute_deadline_non_periodic_task;
-			release_dd_task(user_defined_non_periodic_task_handle, NON_PERIODIC, USER_DEFINED_NON_PERIODIC_TASK_ID, absolute_deadline_non_periodic_task);
-		}
-
-		vTaskDelay(pdMS_TO_TICKS(HYPER_PERIOD));
-	}
-}
-
-// Execute dd user-defined task 1
-static void dd_user_defined_task_1(void *pvParameters)
-{
-	dd_task_t *user_task_1 = (dd_task_t*)pvParameters;
-
-	TickType_t current_time = 0;
-	TickType_t previous_tick = 0;
-	TickType_t execution_time = 95/portTICK_PERIOD_MS;
-	TickType_t relative_deadline = 0;
-	TickType_t release_time = 0;
-	uint32_t counter = 0;
-	uint32_t user_task_1_id = USER_DEFINED_TASK1_ID;
-
-	while(1)
-	{
-		release_time = xTaskGetTickCount();
-		previous_tick = release_time; // what is this?
-		current_time = release_time;
-		counter = 0;
-
-		STM_EVAL_LEDToggle(amber_led);
-
-		while(counter < execution_time)
-		{
-			current_time = xTaskGetTickCount();
-
-			if(current_time != previous_tick)
-			{
-				if(current_time % 2 == 0)
-				{
-					STM_EVAL_LEDToggle(amber_led);
-				}
-			}
-
-			previous_tick = current_time;
-			counter++;
-		}
-
-		STM_EVAL_LEDOff(amber_led);
-		relative_deadline = user_task_1->absolute_deadline - current_time;
-		vTaskDelayUntil(&current_time, relative_deadline);
-		dd_task_completed(user_task_1_id);
-		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-		free_dd_task(user_task_1);
-	}
-}
-
-// Execute dd user-defined task 1
-static void dd_user_defined_task_2(void *pvParameters)
-{
-	dd_task_t *user_task_2 = (dd_task_t*)pvParameters;
-
-	TickType_t current_time = 0;
-	TickType_t previous_tick = 0;
-	TickType_t execution_time = 150/portTICK_PERIOD_MS;
-	TickType_t relative_deadline = 0;
-	TickType_t release_time = 0;
-	uint32_t counter = 0;
-	uint32_t user_task_2_id = USER_DEFINED_TASK2_ID;
-
-	while(1)
-	{
-		release_time = xTaskGetTickCount();
-		previous_tick = release_time; // what is this?
-		current_time = release_time;
-		counter = 0;
-
-		STM_EVAL_LEDToggle(green_led);
-
-		while(counter < execution_time)
-		{
-			current_time = xTaskGetTickCount();
-
-			if(current_time != previous_tick)
-			{
-				if(current_time % 2 == 0)
-				{
-					STM_EVAL_LEDToggle(green_led);
-				}
-			}
-
-			previous_tick = current_time;
-			counter++;
-		}
-
-		STM_EVAL_LEDOff(green_led);
-		relative_deadline = user_task_2->absolute_deadline - current_time;
-		vTaskDelayUntil(&current_time, relative_deadline);
-		dd_task_completed(user_task_2_id);
-		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-		free_dd_task(user_task_2);
-	}
-}
-
-// Execute dd user-defined task 1
-void dd_user_defined_task_3(void *pvParameters)
-{
-	dd_task_t *user_task_3 = (dd_task_t*)pvParameters;
-
-	TickType_t current_time = 0;
-	TickType_t previous_tick = 0;
-	TickType_t execution_time = 250/portTICK_PERIOD_MS;
-	TickType_t relative_deadline = 0;
-	TickType_t release_time = 0;
-	uint32_t counter = 0;
-	uint32_t user_task_3_id = USER_DEFINED_TASK3_ID;
-
-	while(1)
-	{
-		release_time = xTaskGetTickCount();
-		previous_tick = release_time; // what is this?
-		current_time = release_time;
-		counter = 0;
-
-		STM_EVAL_LEDToggle(blue_led);
-
-		while(counter < execution_time)
-		{
-			current_time = xTaskGetTickCount();
-
-			if(current_time != previous_tick)
-			{
-				if(current_time % 2 == 0)
-				{
-					STM_EVAL_LEDToggle(blue_led);
-				}
-			}
-
-			previous_tick = current_time;
-			counter++;
-		}
-
-		STM_EVAL_LEDOff(blue_led);
-		relative_deadline = user_task_3->absolute_deadline - current_time;
-		vTaskDelayUntil(&current_time, relative_deadline);
-		dd_task_completed(user_task_3_id);
-		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-		free_dd_task(user_task_3);
-	}
-}
-
-static void dd_user_defined_non_periodic_task(void *pvParameters)
-{
-	dd_task_t *user_non_periodic_task = (dd_task_t*)pvParameters;
-
-	TickType_t current_time = 0;
-	TickType_t previous_tick = 0;
-	TickType_t execution_time = 150/portTICK_PERIOD_MS;
-	TickType_t relative_deadline = 0;
-	TickType_t release_time = 0;
-	uint32_t counter = 0;
-	uint32_t user_non_periodic_task_id = USER_DEFINED_NON_PERIODIC_TASK_ID;
-
-	while(1)
-	{
-		release_time = xTaskGetTickCount();
-		previous_tick = release_time; // what is this?
-		current_time = release_time;
-		counter = 0;
-
-		STM_EVAL_LEDToggle(red_led);
-
-		while(counter < execution_time)
-		{
-			current_time = xTaskGetTickCount();
-
-			if(current_time != previous_tick)
-			{
-				if(current_time % 2 == 0)
-				{
-					STM_EVAL_LEDToggle(red_led);
-				}
-			}
-
-			previous_tick = current_time;
-			counter++;
-		}
-
-		STM_EVAL_LEDOff(red_led);
-		relative_deadline = user_non_periodic_task->absolute_deadline - current_time;
-		vTaskDelayUntil(&current_time, relative_deadline);
-		dd_task_completed(user_non_periodic_task_id);
-		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-		free_dd_task(user_non_periodic_task);
-	}
-}
-
-// Push Button Interrupt Handler
-void EXTI0_IRQHandler(void)
-{
-    /* Make sure that interrupt flag is set */
-    if (EXTI_GetITStatus(EXTI_Line0) != RESET)
-    {
-        // Switch an LED
-        //STM_EVAL_LEDToggle(green_led);
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-        /* Notify the task that the transmission is complete. */
-        vTaskNotifyGiveFromISR(user_defined_non_periodic_task_handle, &xHigherPriorityTaskWoken);
-
-        /* Clear interrupt flag (Want to do this as late as possible to avoid triggering the IRQ in the IRQ) */
-        EXTI_ClearITPendingBit(EXTI_Line0);
-
-        portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-    }
+	vPortFree((void *)ptask_info);
 }
 
 // release_dd_task
 // -	receives all info to create a new dd_task struct excluding release time and completion time
-// -	package dd_task struct as a message and send to a queue (xQueueSend(dd_task))
+// -	packages dd_task struct as a message and send to a queue (xQueueSend(dd_task))
 // DD Scheduler receives this message from the queue (xQueueReceive(dd_task))
-void release_dd_task(TaskHandle_t t_handle, task_type_t type, uint32_t task_id, uint32_t absolute_deadline)
+void release_dd_task_info(dd_task_info_t *ptask_info)
 {
-	dd_task_t received_dd_task_info;
+	dd_message_t scheduler_message;
 
-	received_dd_task_info.t_handle = t_handle;
-	received_dd_task_info.type = type;
-	received_dd_task_info.task_id = task_id;
-	received_dd_task_info.absolute_deadline = absolute_deadline;
-	xQueueSend(dd_scheduler_message_queue, &received_dd_task_info, pdMS_TO_TICKS(0));
+	scheduler_message.message_type = RELEASE_TASK;
+	scheduler_message.ptask_info = ptask_info;
+	xQueueSend(dd_scheduler_message_queue, (void *)&scheduler_message, portMAX_DELAY);
 }
 
 // complete_dd_task
 // - 	receive task ID of DD task that has completed execution
 // - 	package task ID as a message and send to a queue (xQueueSend(task ID))
 // DD Scheduler receives this message from the queue (xQueueReceive(task ID))
-void dd_task_completed(uint32_t task_id)
+void dd_task_completed(dd_task_info_t *ptask_info)
 {
-	dd_task_t received_dd_task_id;
+	dd_message_t scheduler_message;
 
-	received_dd_task_id.task_id = task_id;
-	xQueueSend(dd_scheduler_message_queue, &received_dd_task_id, pdMS_TO_TICKS(0));
+	scheduler_message.message_type = COMPLETED_TASK;
+	scheduler_message.ptask_info = ptask_info;
+	xQueueSend(dd_scheduler_message_queue, (void *)&scheduler_message, portMAX_DELAY);
 }
 
-// get_active_dd_task_list
-// -	send a message to a queue requesting Active Task List from DD scheduler
-// Once DD Scheduler responds, get_active_dd_task_list function returns the list
-dd_task_list_t **get_active_dd_task_list(void)
+// Execute the dd generator task 1 task
+static void dd_task_generator_1(void *pvParameters)
 {
-	dd_message_t request_active_dd_task_list = {GET_ACTIVE_DD_TASK_LIST, NULL};
+	printf("dd_task_generator_1\n");
+	const TickType_t xGeneratorDelay1 = TASK_1_PERIOD;
+	TickType_t current_time;
 
-	xQueueSend(dd_scheduler_message_queue, &request_active_dd_task_list, pdMS_TO_TICKS(0));
+	while(1)
+	{
+		//TaskHandle_t user_defined_task_1_handle = NULL;
+		dd_task_info_t *ptask_info_1 = NULL;
+		current_time = xTaskGetTickCount();
+		//dd_message_t scheduler_message;
+		ptask_info_1 = pCreate_dd_task_info(NULL, PERIODIC, TASK1_ID, (current_time + xGeneratorDelay1));
+		xTaskCreate(dd_user_defined_task_1, "DDUserDefinedTask1", configMINIMAL_STACK_SIZE, (void*)ptask_info_1, TASK_LOWEST_PRIORITY, &(ptask_info_1->task_handle));
+		vTaskSuspend(ptask_info_1->task_handle);
+		//BaseType_t returnTaskValue = xTaskCreate(dd_user_defined_task_1, "DDUserDefinedTask1", configMINIMAL_STACK_SIZE, (void*)ptask_info_1, TASK_LOWEST_PRIORITY, &(ptask_info_1->task_handle));
+		//printf("dd_task_generator_1 handle, return task value %d\n", returnTaskValue);
+		//printf("dd_task_generator_1 handle 2\n");
+		printf("dd_task_generator_1 handle = 0x%x: released task!\n", ptask_info_1->task_handle);
+		//scheduler_message.message_type = RELEASE_TASK;
+		//scheduler_message.message_data = ptask_info_1;
+		release_dd_task_info(ptask_info_1);
+		//ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		//vTaskResume(ptask_info_1->task_handle);
+		vTaskDelay(xGeneratorDelay1);
+		//printf("dd_task_generator_1 handle after delay\n");
+	}
+}
+
+// Execute the dd generator task 2
+static void dd_task_generator_2(void *pvParameters)
+{
+	printf("dd_task_generator_2\n");
+	const TickType_t xGeneratorDelay2 = TASK_2_PERIOD;
+	TickType_t current_time;
+
+	while(1)
+	{
+		dd_task_info_t *ptask_info_2 = NULL;
+		current_time = xTaskGetTickCount();
+		ptask_info_2 = pCreate_dd_task_info(NULL, PERIODIC, TASK2_ID, (current_time + xGeneratorDelay2));
+		xTaskCreate(dd_user_defined_task_2,	"DDUserDefinedTask2", configMINIMAL_STACK_SIZE,	(void*)ptask_info_2, TASK_LOWEST_PRIORITY, &(ptask_info_2->task_handle));
+		vTaskSuspend(ptask_info_2->task_handle);
+		printf("dd_task_generator_2 handle = 0x%x: released task!\n", ptask_info_2->task_handle);
+		release_dd_task_info(ptask_info_2);
+		vTaskDelay(xGeneratorDelay2);
+	}
+}
+
+// Execute dd generator task 3
+static void dd_task_generator_3(void *pvParameters)
+{
+	printf("dd_task_generator_3\n");
+	const TickType_t xGeneratorDelay3 = TASK_3_PERIOD;
+	TickType_t current_time;
+
+	while(1)
+	{
+		dd_task_info_t *ptask_info_3 = NULL;
+		current_time = xTaskGetTickCount();
+		ptask_info_3 = pCreate_dd_task_info(NULL, PERIODIC, TASK3_ID, (current_time + xGeneratorDelay3));
+		xTaskCreate(dd_user_defined_task_3,	"DDUserDefinedTask3", configMINIMAL_STACK_SIZE,	(void*)ptask_info_3, TASK_LOWEST_PRIORITY, &(ptask_info_3->task_handle));
+		vTaskSuspend(ptask_info_3->task_handle);
+		printf("dd_task_generator_3 handle = 0x%x: released task!\n", ptask_info_3->task_handle);
+		release_dd_task_info(ptask_info_3);
+		vTaskDelay(xGeneratorDelay3);
+	}
+}
+
+//static void dd_aperiodic_task_generator(void *pvParameters)
+//{
+//	dd_task_info_t *ptask_info = NULL;
+//
+//	while(1)
+//	{
+//		ptask_info = create_dd_task(user_defined_aperiodic_task_handle, APERIODIC, APERIODIC_TASK_ID, APERIODIC_TASK_PERIOD);
+//		xTaskCreate(dd_user_defined_aperiodic_task,	"DDUserDefinedAperiodicTask", configMINIMAL_STACK_SIZE,	NULL, DD_TASK_PRIORITY, user_defined_aperiodic_task_handle);
+//		release_dd_task(ptask_info);
+//		vTaskDelay(pdMS_TO_TICKS(APERIODIC_TASK_PERIOD));
+//	}
+//}
+
+static void vTaskTimerCallBack(xTimerHandle xTimer)
+{
+	QueueHandle_t dd_task_message_queue_handle = 0;
+	uint32_t timer_id = 0;
+
+	dd_task_message_queue_handle = pvTimerGetTimerID(xTimer);
+	//printf("vTaskTimerCallBack: queue handle = 0x%x\n", dd_task_message_queue_handle);
+	xQueueSend(dd_task_message_queue_handle, (void *)&timer_id, (TickType_t)10);
+}
+
+// Execute dd user-defined task 1
+static void dd_user_defined_task_1(void *pvParameters)
+{
+	printf("dd_user_defined_task_1\n");
+	dd_task_info_t *pMy_task_info = (dd_task_info_t *)pvParameters;
+	QueueHandle_t dd_task1_message_queue_handle = NULL;
+	//TimerHandle_t xTaskTimer1 = NULL;
+	TaskHandle_t my_task_handle = xTaskGetCurrentTaskHandle();
+
+	TickType_t execution_time1 = 0;
+	TickType_t current_time = 0;
+	uint32_t task_1_id = TASK1_ID;
+	uint32_t *ptimer1_id = 0;
+	uint32_t startTick;
+	uint32_t endTick;
+
+	dd_task1_message_queue_handle = xQueueCreate(taskQUEUE_LENGTH, sizeof(uint32_t));
+	ptimer1_id = dd_task1_message_queue_handle;
+	current_time = xTaskGetTickCount();
+	execution_time1 = current_time + (TASK_1_EXECUTION_TIME/portTICK_PERIOD_MS);
+	pMy_task_info->timer_handle = xTimerCreate("TaskTimer1", execution_time1, pdFALSE, (void *)ptimer1_id, vTaskTimerCallBack);
+	xTimerStart(pMy_task_info->timer_handle, pdMS_TO_TICKS(0));
+	startTick = xTaskGetTickCount();
+	STM_EVAL_LEDOn(amber_led);
+	printf("dd_user_defined_task_1 handle = 0x%x: Amber LED On.\n", (unsigned int)my_task_handle);
+
+	if(xQueueReceive(dd_task1_message_queue_handle, &task_1_id, portMAX_DELAY) == pdTRUE)
+	{
+		// wait here until message is receive
+	}
+
+	endTick = xTaskGetTickCount();
+	STM_EVAL_LEDOff(amber_led);
+	printf("dd_user_defined_task_1 handle = 0x%x, tick = %d: Amber LED Off.\n", (unsigned int)my_task_handle, (int)(endTick - startTick));
+	dd_task_completed(pMy_task_info);
+	//xTimerDelete(pMy_task_info->timer_handle, pdMS_TO_TICKS(0));
+	//vQueueDelete(dd_task1_message_queue_handle);
+	//printf("task 1 handle = 0x%x, delete\n", my_task_handle);
+	//vTaskDelete(my_task_handle);
+	//vTaskDelete(NULL);
+	vTaskSuspend(my_task_handle);
+	//vTaskDelayUntil(&startTick, ((pMy_task_info->absolute_deadline) - startTick));
+}
+
+// Execute dd user-defined task 1
+static void dd_user_defined_task_2(void *pvParameters)
+{
+	printf("dd_user_defined_task_2\n");
+	dd_task_info_t *pMy_task_info = (dd_task_info_t *)pvParameters;
+	QueueHandle_t dd_task2_message_queue_handle = NULL;
+	TaskHandle_t my_task_handle = xTaskGetCurrentTaskHandle();
+
+	//dd_message_t scheduler_message;
+	TickType_t execution_time2 = 0;
+	TickType_t current_time = 0;
+	uint32_t task_2_id = TASK2_ID;
+	uint32_t *ptimer2_id = 0;
+	uint32_t startTick;
+	uint32_t endTick;
+
+	dd_task2_message_queue_handle = xQueueCreate(taskQUEUE_LENGTH, sizeof(uint32_t));
+	ptimer2_id = dd_task2_message_queue_handle;
+	current_time = xTaskGetTickCount();
+	execution_time2 = current_time + (TASK_2_EXECUTION_TIME/portTICK_PERIOD_MS);
+	pMy_task_info->timer_handle = xTimerCreate("TaskTimer2", execution_time2, pdFALSE, (void *)ptimer2_id, vTaskTimerCallBack);
+	xTimerStart(pMy_task_info->timer_handle, pdMS_TO_TICKS(0));
+	startTick = xTaskGetTickCount();
+	STM_EVAL_LEDOn(green_led);
+	printf("dd_user_defined_task_2 handle = 0x%x: Green LED On.\n", (unsigned int)my_task_handle);
+
+	if(xQueueReceive(dd_task2_message_queue_handle, &task_2_id, portMAX_DELAY) == pdTRUE)
+	{
+		// wait here until message is receive
+	}
+
+	endTick = xTaskGetTickCount();
+	STM_EVAL_LEDOff(green_led);
+	printf("dd_user_defined_task_2 handle = 0x%x, tick = %d: Green LED Off.\n", (unsigned int)my_task_handle, (int)(endTick - startTick));
+	dd_task_completed(pMy_task_info);
+	//vTaskDelete(my_task_handle);
+	vTaskSuspend(my_task_handle);
+}
+
+// Execute dd user-defined task 1
+static void dd_user_defined_task_3(void *pvParameters)
+{
+	printf("dd_user_defined_task_3\n");
+	dd_task_info_t *pMy_task_info = (dd_task_info_t *)pvParameters;
+	QueueHandle_t dd_task3_message_queue_handle = NULL;
+	TaskHandle_t my_task_handle = xTaskGetCurrentTaskHandle();
+
+	TickType_t execution_time3 = 0;
+	TickType_t current_time = 0;
+	uint32_t task_3_id = TASK3_ID;
+	uint32_t *ptimer3_id = 0;
+	uint32_t startTick;
+	uint32_t endTick;
+
+	dd_task3_message_queue_handle = xQueueCreate(taskQUEUE_LENGTH, sizeof(uint32_t));
+	ptimer3_id = dd_task3_message_queue_handle;
+	current_time = xTaskGetTickCount();
+	execution_time3 = current_time + (TASK_3_EXECUTION_TIME/portTICK_PERIOD_MS);
+	pMy_task_info->timer_handle = xTimerCreate("TaskTimer3", execution_time3, pdFALSE, (void *)ptimer3_id, vTaskTimerCallBack);
+	xTimerStart(pMy_task_info->timer_handle, pdMS_TO_TICKS(0));
+	startTick = xTaskGetTickCount();
+	STM_EVAL_LEDOn(blue_led);
+	printf("dd_user_defined_task_3 handle = 0x%x: Blue LED On.\n", (unsigned int)my_task_handle);
+
+	if(xQueueReceive(dd_task3_message_queue_handle, &task_3_id, portMAX_DELAY) == pdTRUE)
+	{
+		// wait here until message is receive
+	}
+
+	endTick = xTaskGetTickCount();
+	STM_EVAL_LEDOff(blue_led);
+	printf("dd_user_defined_task_3 handle = 0x%x, tick = %d: Blue LED Off.\n", (unsigned int)my_task_handle, (int)(endTick - startTick));
+	dd_task_completed(pMy_task_info);
+	vTaskSuspend(my_task_handle);
+}
+
+//static void dd_user_defined_aperiodic_task(void *pvParameters)
+//{
+//	TickType_t execution_time = APERIODIC_TASK_EXECUTION_TIME/portTICK_PERIOD_MS;
+//	uint32_t aperiodic_task_id = APERIODIC_TASK_ID;
+//	uint32_t *aperiodictimer_id = NULL;
+//
+//	while(1)
+//	{
+//		if(xQueueReceive(dd_task_message_queue, aperiodictimer_id, pdMS_TO_TICKS(0)) == pdTRUE)
+//		{
+//			break;
+//		}
+//
+//		STM_EVAL_LEDOn(red_led);
+//		printf("Red LED On.\n");
+//		STM_EVAL_LEDOff(red_led);
+//		printf("Red LED Off.\n");
+//	}
+//
+//	xQueueSend(dd_scheduler_message_queue, &aperiodic_task_id, pdMS_TO_TICKS(0));
+//	vTaskDelete(user_defined_aperiodic_task_handle);
+//}
+
+// Push Button Interrupt Handler
+//void EXTI0_IRQHandler(void)
+//{
+//	/* Make sure that interrupt flag is set */
+//	if (EXTI_GetITStatus(EXTI_Line0) != RESET)
+//	{
+//		// Switch an LED
+//		//STM_EVAL_LEDToggle(green_led);
+//		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+//		/* Notify the task that the transmission is complete. */
+//		vTaskNotifyGiveFromISR(user_defined_aperiodic_task_handle, &xHigherPriorityTaskWoken);
+//		/* Clear interrupt flag (Want to do this as late as possible to avoid triggering the IRQ in the IRQ) */
+//		EXTI_ClearITPendingBit(EXTI_Line0);
+//		portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+//	}
+//}
+
+dd_task_node_t *insert_new_node_to_active_list(dd_task_info_t *ptask_info)
+{
+	dd_task_node_t *ptemp = (dd_task_node_t*)pvPortMalloc(sizeof(dd_task_node_t)); // create a new node
+
+	ptemp->pnode = ptask_info;
+	ptemp->pnext_node = pActive_list_head;
+	pActive_list_head = ptemp;
+
+	return ptemp;
+}
+
+dd_task_node_t *insert_new_node_to_completed_list(dd_task_info_t *ptask_info)
+{
+	dd_task_node_t *ptemp = (dd_task_node_t*)pvPortMalloc(sizeof(dd_task_node_t)); // create a new node
+
+	ptemp->pnode = ptask_info;
+	ptemp->pnext_node = pCompletion_list_head;
+	pCompletion_list_head = ptemp;
+
+	return ptemp;
+}
+
+dd_task_node_t *insert_new_node_to_overdue_list(dd_task_info_t *ptask_info)
+{
+	dd_task_node_t *ptemp = (dd_task_node_t*)pvPortMalloc(sizeof(dd_task_node_t)); // create a new node
+
+	ptemp->pnode = ptask_info;
+	ptemp->pnext_node = pOverdue_list_head;
+	pOverdue_list_head = ptemp;
+
+	return ptemp;
+}
+
+uint32_t active_list_length()
+{
+	uint32_t list_length = 0;
+	dd_task_node_t *pcurrent = NULL;
+
+	for(pcurrent = pActive_list_head; pcurrent != NULL; pcurrent = pcurrent->pnext_node)
+	{
+		list_length++;
+	}
+
+	return list_length;
+}
+
+// sort active_dd_task_list
+// List of DD tasks to be scheduled by the DD scheduler
+// -	Sort the list by deadline every time a DD task is added or removed from the list using selection sort
+// -	Select and implement a data structure and sorting algorithm to sort the list
+// -	Use singly-linked list for sorting
+void sort_active_list_by_deadline(dd_task_info_t *ptask_info)
+{
+	dd_task_node_t *pcurrent = NULL;
+	dd_task_node_t *pnext = NULL;
+	dd_task_info_t *ptemp = NULL;
+
+	uint32_t list_size = active_list_length();
+	uint32_t stored_list_size = list_size;
+
+	for(int i = 0; i < (list_size - 1); i++, stored_list_size--)
+	{
+		pcurrent = pActive_list_head;
+		pnext = pActive_list_head->pnext_node;
+
+		for(int j = 0; j < stored_list_size; j++)
+		{
+			if((pcurrent->pnode->absolute_deadline) > (ptask_info->absolute_deadline))
+			{
+				ptemp = pcurrent->pnode;
+				pcurrent->pnode = pnext->pnode;
+				pnext->pnode = ptemp;
+			}
+
+			pcurrent = pcurrent->pnext_node;
+			pnext = pnext->pnext_node;
+		}
+	}
+}
+
+dd_task_node_t *pFind_completed_task_node_by_time_stamp(dd_task_info_t *ptask_info)
+{
+	dd_task_node_t *pcurrent = pActive_list_head;
+
+	if(pActive_list_head == NULL)
+	{
+		return NULL;
+	}
+
+	while(pcurrent->pnode->completion_time != (ptask_info->completion_time))
+	{
+		if(pcurrent->pnext_node == NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			pcurrent = pcurrent->pnext_node;
+		}
+	}
+
+	return pcurrent;
+}
+
+dd_task_node_t *pFind_overdue_task_node_using_time_stamp(uint32_t time_stamp)
+{
+	dd_task_node_t *pcurrent = pActive_list_head;
+
+	if(pActive_list_head == NULL)
+	{
+		return NULL;
+	}
+
+	while(pcurrent->pnode->absolute_deadline < time_stamp)
+	{
+		if(pcurrent->pnext_node == NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			pcurrent = pcurrent->pnext_node;
+		}
+	}
+
+	return pcurrent;
+}
+
+// List of DD tasks that have completed execution before their deadlines
+// -	Remove completed tasks before their deadline from Active Task List
+// -	Add these completed tasks to Completed Task List
+dd_task_node_t *pRemove_completed_task_node_by_time_stamp(dd_task_info_t *ptask_info)
+{
+	dd_task_node_t *pcurrent = pActive_list_head;
+	dd_task_node_t *pprevious = NULL;
+
+	if(pActive_list_head == NULL)
+	{
+		return NULL;
+	}
+
+	while((pcurrent->pnode->completion_time) != ptask_info->completion_time)
+	{
+		// if it is the last node
+		if(pcurrent->pnext_node == NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			pprevious = pcurrent;
+			pcurrent = pcurrent->pnext_node;
+		}
+	}
+
+	// found a match
+	if(pcurrent == pActive_list_head)
+	{
+		pActive_list_head = pActive_list_head->pnext_node;
+	}
+	else
+	{
+		pprevious->pnext_node = pcurrent->pnext_node;
+	}
+
+	return pcurrent;
+}
+
+dd_task_node_t *pRemove_overdue_task_node_by_time_stamp(uint32_t time_stamp)
+{
+	dd_task_node_t *pcurrent = pActive_list_head;
+	dd_task_node_t *pprevious = NULL;
+
+	if(pActive_list_head == NULL)
+	{
+		return NULL;
+	}
+
+	while((pcurrent->pnode->absolute_deadline) < time_stamp)
+	{
+		// if it is the last node
+		if(pcurrent->pnext_node == NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			pprevious = pcurrent;
+			pcurrent = pcurrent->pnext_node;
+		}
+	}
+
+	// found a match
+	if(pcurrent == pActive_list_head)
+	{
+		pActive_list_head = pActive_list_head->pnext_node;
+	}
+	else
+	{
+		pprevious->pnext_node = pcurrent->pnext_node;
+	}
+
+	return pcurrent;
+}
+
+void printActiveList()
+{
+	dd_task_node_t *ptemp = pActive_list_head;
+
+	while(ptemp != NULL)
+	{
+		printf("Task handle = 0x%x, release time = %d\n", ptemp->pnode->task_handle, ptemp->pnode->release_time);
+		ptemp = ptemp->pnext_node;
+	}
+
+	printf("dd_scheduler gets here?\n");
+}
+
+void printCompletedList()
+{
+	dd_task_node_t *ptemp = pCompletion_list_head;
+
+	while(ptemp != NULL)
+	{
+		printf("Task handle = 0x%x, completion time = %d\n", ptemp->pnode->task_handle, ptemp->pnode->completion_time);
+		ptemp = ptemp->pnext_node;
+	}
+}
+
+void printOverdueList()
+{
+	dd_task_node_t *ptemp = pOverdue_list_head;
+
+	while(ptemp != NULL)
+	{
+		printf("Task handle = 0x%x, overdue time = %d\n", ptemp->pnode->task_handle, ptemp->pnode->overdue_time);
+		ptemp = ptemp->pnext_node;
+	}
+}
+
+// Execute deadline-driven scheduler task
+// 1.	Implements EDF algorithm
+// 2.	Control the priorities of users-define FreeRTOS tasks from an actively-managed list of DD tasks
+void dd_task_scheduler(void *pvParameters)
+{
+	printf("dd_task_scheduler: print 1st\n");
+	dd_message_t scheduler_message;
+	dd_task_node_t *pnode_with_completion_time = NULL;
+	dd_task_node_t *pnode_with_completion_time_removed = NULL;
+	dd_task_node_t *pnode_with_overdue_time = NULL;
+	dd_task_node_t *active_list = NULL;
+	dd_task_node_t *completed_list = NULL;
+	dd_task_node_t *overdue_list = NULL;
+
+	TickType_t release_time = 0;
+	//TickType_t aperodic_task_timer_period = 0;
+	TickType_t dd_task_completion_time = 0;
+	dd_task_info_t *ptask_info;
+	printf("dd_task_scheduler: print 2nd\n");
+
+	while(1)
+	{
+		printf("dd_task_scheduler waiting for message\n");
+		if(xQueueReceive(dd_scheduler_message_queue, &scheduler_message, portMAX_DELAY) == pdTRUE)
+		{
+			printf("Scheduler message type: %d\n", scheduler_message.message_type);
+			ptask_info = scheduler_message.ptask_info;
+
+			//		//ptask_info->release_time = release_time;
+			//		pnode_with_overdue_time = pFind_overdue_task_node_using_time_stamp(ptask_info->release_time);
+			//		printf("pnode_with_overdue_time = %d", );
+			//		overdue_list = insert_new_node_to_overdue_list(pnode_with_overdue_time->pnode);
+			//		pRemove_overdue_task_node_by_time_stamp(ptask_info->release_time);
+			//		sort_active_list_by_deadline(ptask_info);
+			//		vTaskPrioritySet(ptask_info->task_handle, tskIDLE_PRIORITY + 1);
+
+			//printf("dd_task_scheduler: print 3rd\n");
+
+
+			switch(scheduler_message.message_type)
+			{
+			// If DDS receives message from release_dd_task
+			// then	DD scheduler:
+			// -	assigns release time for new task
+			// -	inserts DD task to Active task List
+			// -	sorts the list by deadline
+			// -	sets priorities of the User-Defined tasks
+			case RELEASE_TASK:
+				printf("dd_task_scheduler: task has been released\n");
+				release_time = xTaskGetTickCount();
+				ptask_info->release_time = release_time;
+				printf("Task 0x%x, released time = %d\n", ptask_info->task_handle, ptask_info->release_time);
+				active_list = insert_new_node_to_active_list(ptask_info);
+				sort_active_list_by_deadline(ptask_info);
+				vTaskPrioritySet(ptask_info->task_handle, tskIDLE_PRIORITY + 1);
+				//xAperiodicTimer = xTimerCreate("AperiodicTaskTimer", execution_time, pdFALSE, aperiodictimer_id, vAperiodicTaskTimerCallBack);
+				//xTimerStart(xAperiodicTimer, pdMS_TO_TICKS(0));
+				vTaskResume(ptask_info->task_handle);
+				break;
+
+				// If DDS receives message from complete_dd_task
+				// then DD scheduler:
+				// -	assigns completion time to newly-completed DD task
+				// -	removes DD task from Active Task List
+				// -	inserts it to the Completed Task List
+				// -	sorts Active Task List by deadline
+				// -	sets priorities of the User-Define tasks
+			case COMPLETED_TASK:
+				printf("dd_task_scheduler: task has been completed\n");
+				dd_task_completion_time = xTimerGetPeriod(ptask_info->timer_handle);
+				ptask_info->completion_time = dd_task_completion_time;
+				printf("Task 0x%x completion time %d \n", ptask_info->task_handle, ptask_info->completion_time);
+				pnode_with_completion_time = pFind_completed_task_node_by_time_stamp(ptask_info);
+				//printf("dd_scheduler gets here?\n");
+				completed_list = insert_new_node_to_completed_list(pnode_with_completion_time->pnode);
+				pnode_with_completion_time_removed = pRemove_completed_task_node_by_time_stamp(pnode_with_completion_time->pnode);
+				//delete_dd_task_info(pnode_with_completion_time_removed->pnode);
+				//sort_active_list_by_deadline(ptask_info);
+
+				//vTaskPrioritySet(ptask_info->task_handle, tskIDLE_PRIORITY + 1);
+
+				break;
+
+				// If DDS receives message from get_active_dd_task_list
+				// then DD scheduler sends Active Task List to the monitor queue
+			case GET_ACTIVE_DD_TASK_LIST:
+				if(uxQueueSpacesAvailable(dd_monitor_message_queue) == 0)
+				{
+					xQueueReset(dd_monitor_message_queue);
+				}
+
+				xQueueSend(dd_monitor_message_queue, (void *)active_list, portMAX_DELAY);
+
+				break;
+
+				// If DDS receives message from get_completed_dd_task_list
+				// then DDS sends Completed Task List to the monitor queue
+			case GET_COMPLETED_DD_TASK_LIST:
+				if(uxQueueSpacesAvailable(dd_monitor_message_queue) == 0)
+				{
+					xQueueReset(dd_monitor_message_queue);
+				}
+
+				xQueueSend(dd_monitor_message_queue, (void *)completed_list, portMAX_DELAY);
+				break;
+
+				// Message from get_overdue_dd_task_list
+				// DD scheduler	sends Overdue Task List to a queue
+			case GET_OVERDUE_DD_TASK_lIST:
+				if(uxQueueSpacesAvailable(dd_monitor_message_queue) == 0)
+				{
+					xQueueReset(dd_monitor_message_queue);
+				}
+
+				xQueueSend(dd_monitor_message_queue, (void *)overdue_list, portMAX_DELAY);
+				break;
+
+			default:
+				printf("Error: Unrecognized message type %d!\n", scheduler_message.message_type);
+				break;
+			}
+
+
+
+//		//ptask_info->release_time = release_time;
+//		pnode_with_overdue_time = pFind_overdue_task_node_using_time_stamp(ptask_info->release_time);
+//		printf("pnode_with_overdue_time = %d", );
+//		overdue_list = insert_new_node_to_overdue_list(pnode_with_overdue_time->pnode);
+//		pRemove_overdue_task_node_by_time_stamp(ptask_info->release_time);
+//		sort_active_list_by_deadline(ptask_info);
+//		vTaskPrioritySet(ptask_info->task_handle, tskIDLE_PRIORITY + 1);
+
+		//printf("dd_task_scheduler: print 3rd\n");
+
+
+//		switch(scheduler_message.message_type)
+//		{
+//			// If DDS receives message from release_dd_task
+//			// then	DD scheduler:
+//			// -	assigns release time for new task
+//			// -	inserts DD task to Active task List
+//			// -	sorts the list by deadline
+//			// -	sets priorities of the User-Defined tasks
+//			case RELEASE_TASK:
+//				printf("dd_task_scheduler: task has been released\n");
+//				release_time = xTaskGetTickCount();
+//				ptask_info->release_time = release_time;
+//				printf("Task 0x%x, released time = %d\n", ptask_info->task_handle, ptask_info->release_time);
+//				active_list = insert_new_node_to_active_list(ptask_info);
+//				sort_active_list_by_deadline(ptask_info);
+//				vTaskPrioritySet(ptask_info->task_handle, tskIDLE_PRIORITY + 1);
+//				//xAperiodicTimer = xTimerCreate("AperiodicTaskTimer", execution_time, pdFALSE, aperiodictimer_id, vAperiodicTaskTimerCallBack);
+//				//xTimerStart(xAperiodicTimer, pdMS_TO_TICKS(0));
+//				vTaskResume(ptask_info->task_handle);
+//				break;
+//
+//			// If DDS receives message from complete_dd_task
+//			// then DD scheduler:
+//			// -	assigns completion time to newly-completed DD task
+//			// -	removes DD task from Active Task List
+//			// -	inserts it to the Completed Task List
+//			// -	sorts Active Task List by deadline
+//			// -	sets priorities of the User-Define tasks
+//			case COMPLETED_TASK:
+//				printf("dd_task_scheduler: task has been completed\n");
+//				dd_task_completion_time = xTimerGetPeriod(ptask_info->timer_handle);
+//				ptask_info->completion_time = dd_task_completion_time;
+//				printf("Task 0x%x completion time %d \n", ptask_info->task_handle, ptask_info->completion_time);
+//				pnode_with_completion_time = pFind_completed_task_node_by_time_stamp(ptask_info);
+//				completed_list = insert_new_node_to_completed_list(pnode_with_completion_time->pnode);
+//				pRemove_completed_task_node_by_time_stamp(pnode_with_completion_time->pnode);
+//				sort_active_list_by_deadline(ptask_info);
+//				vTaskPrioritySet(ptask_info->task_handle, tskIDLE_PRIORITY + 1);
+//				break;
+//
+//			// If DDS receives message from get_active_dd_task_list
+//			// then DD scheduler sends Active Task List to the monitor queue
+//			case GET_ACTIVE_DD_TASK_LIST:
+//				if(uxQueueSpacesAvailable(dd_monitor_message_queue) == 0)
+//				{
+//					xQueueReset(dd_monitor_message_queue);
+//				}
+//
+//				xQueueSend(dd_monitor_message_queue, (void *)active_list, portMAX_DELAY);
+//				break;
+//
+//			// If DDS receives message from get_completed_dd_task_list
+//			// then DDS sends Completed Task List to the monitor queue
+//			case GET_COMPLETED_DD_TASK_LIST:
+//				if(uxQueueSpacesAvailable(dd_monitor_message_queue) == 0)
+//				{
+//					xQueueReset(dd_monitor_message_queue);
+//				}
+//
+//				xQueueSend(dd_monitor_message_queue, (void *)completed_list, portMAX_DELAY);
+//				break;
+//
+//			// Message from get_overdue_dd_task_list
+//			// DD scheduler	sends Overdue Task List to a queue
+//			case GET_OVERDUE_DD_TASK_lIST:
+//				if(uxQueueSpacesAvailable(dd_monitor_message_queue) == 0)
+//				{
+//					xQueueReset(dd_monitor_message_queue);
+//				}
+//
+//				xQueueSend(dd_monitor_message_queue, (void *)overdue_list, portMAX_DELAY);
+//				break;
+//
+//			default:
+//				printf("Error: Unrecognized message type %d!\n", scheduler_message.message_type);
+//				break;
+		}
+	}
+}
+
+// get_active_dd_task_list sends a message to a queue requesting Active Task List from DD scheduler
+// Once DD Scheduler responds, get_active_dd_task_list function returns the list
+dd_task_node_t **pGetActiveDDTaskList(void)
+{
+	dd_message_t request_active_dd_task_list_message;
+	request_active_dd_task_list_message.message_type = GET_ACTIVE_DD_TASK_LIST;
+	request_active_dd_task_list_message.ptask_list = NULL;
+
+	xQueueSend(dd_scheduler_message_queue, (void*)&(request_active_dd_task_list_message.message_type), portMAX_DELAY);
+
+	if(xQueueReceive(dd_monitor_message_queue, &(request_active_dd_task_list_message.ptask_list), portMAX_DELAY) == pdTRUE)
+	{
+		printActiveList();
+	}
 
 	return 0;
 }
@@ -809,11 +989,20 @@ dd_task_list_t **get_active_dd_task_list(void)
 // get_completed_dd_task_list
 // -	send a message to a queue requesting Completed Task List from DD scheduler
 // Once DD Scheduler responds, get_completed_dd_task_list function returns the list
-dd_task_list_t **get_completed_dd_task_list(void)
+dd_task_node_t **pGetCompletedDDTaskList(void)
 {
-	dd_message_t request_complete_dd_task_list = {GET_COMPLETED_DD_TASK_LIST, NULL};
 
-	xQueueSend(dd_scheduler_message_queue, &request_complete_dd_task_list, pdMS_TO_TICKS(0));
+
+	dd_message_t request_complete_dd_task_list_message;
+	request_complete_dd_task_list_message.message_type = GET_COMPLETED_DD_TASK_LIST;
+	request_complete_dd_task_list_message.ptask_list = NULL;
+
+	xQueueSend(dd_scheduler_message_queue, (void *)&(request_complete_dd_task_list_message.message_type), portMAX_DELAY);
+
+	if(xQueueReceive(dd_monitor_message_queue, &(request_complete_dd_task_list_message.ptask_list), portMAX_DELAY) == pdTRUE)
+	{
+		printCompletedList();
+	}
 
 	return 0;
 }
@@ -821,155 +1010,35 @@ dd_task_list_t **get_completed_dd_task_list(void)
 // get_overdue_dd_task_list
 // send a message to a queue requesting Overdue Task List from DD scheduler
 // Once DD Scheduler responds, get_overdue_dd_task_list function returns the list
-dd_task_list_t **get_overdue_dd_task_list(void)
+dd_task_node_t **pGetOverdueDDTaskList(void)
 {
-	dd_message_t request_overdue_dd_task_list = {GET_OVERDUE_DD_TASK_lIST, NULL};
+	dd_message_t request_overdue_dd_task_list_message;
+	request_overdue_dd_task_list_message.message_type = GET_OVERDUE_DD_TASK_lIST;
+	request_overdue_dd_task_list_message.ptask_list = NULL;
 
-	xQueueSend(dd_scheduler_message_queue, &request_overdue_dd_task_list, pdMS_TO_TICKS(0));
+	xQueueSend(dd_scheduler_message_queue, (void *)&(request_overdue_dd_task_list_message.message_type), portMAX_DELAY);
+
+	if(xQueueReceive(dd_monitor_message_queue, &(request_overdue_dd_task_list_message.ptask_list), portMAX_DELAY) == pdTRUE)
+	{
+		printOverdueList();
+	}
 
 	return 0;
 }
 
-// create_active_dd_task_list
-// List of DD tasks to be scheduled by the DD scheduler
-// -	Sort the list by deadline every time a DD task is added or removed from the list
-// -	Select and implement a data structure and sorting algorithm to sort the list
-// -	Use singly-linked list for sorting
-void active_dd_task_list(dd_task_t active_task_t, dd_task_list_t active_task_list_t)
-{
-
-}
-
-// create_complete_dd_task_list
-// List of DD tasks that have completed execution before their deadlines
-// -	Remove completed tasks before their deadline from Active Task List
-// -	Add these completed tasks to Completed Task List
-void complete_dd_task_list()
-{
-
-}
-
-// create_overdue_dd_task_list
-// List of DD tasks that missed their deadlines
-// -	Remove tasks missed their deadline from Active Task List
-// -	Add these missed deadline tasks to Overdue Task List
-void overdue_dd_task_list()
-{
-
-}
-
-// Execute deadline-driven scheduler task
-// 1.	Implements EDF algorithm
-// 2.	Control the priorities of users-define FreeRTOS tasks from an actively-managed list of DD tasks
-void dd_scheduler_task(void *pvParameters)
-{
-	dd_message_t dd_task_list_message;
-	dd_task_t dd_task_released_message;
-	dd_task_t dd_task_completed_message;
-
-	while(1)
-	{
-		// Message from release_dd_task
-		//	DD scheduler:
-		// -	assigns release time for new task
-		// -	add DD task to Active task List
-		// -	sort the list by deadline
-		// -	set priorities of the User-Defined tasks
-		if((xQueueReceive(dd_scheduler_message_queue, (void*)&dd_task_released_message, pdMS_TO_TICKS(0))) == pdTRUE)
-		{
-
-		}
-
-		// Message from complete_dd_task
-		// DD scheduler:
-		// -	assign completion time to newly-completed DD task
-		// -	remove DD task from Active Task List
-		// -	add it to the Completed Task List
-		// -	sort Active Task List by deadline
-		// -	set priorities of the User-Define tasks
-		if((xQueueReceive(dd_scheduler_message_queue, &dd_task_completed_message, pdMS_TO_TICKS(0))) == pdTRUE)
-		{
-
-		}
-
-		if((xQueueReceive(dd_scheduler_message_queue, &dd_task_list_message, pdMS_TO_TICKS(0))) == pdTRUE)
-		{
-			switch(dd_task_list_message.message_type)
-			{
-				// Message from get_active_dd_task_list
-				// DD scheduler	sends Active Task List to a queue
-				case GET_ACTIVE_DD_TASK_LIST:
-
-					break;
-
-				// Message from get_completed_dd_task_list
-				// DD scheduler	sends Completed Task List to a queue
-				case GET_COMPLETED_DD_TASK_LIST:
-
-					break;
-
-				// Message from get_overdue_dd_task_list
-				// DD scheduler	sends Overdue Task List to a queue
-				case GET_OVERDUE_DD_TASK_lIST:
-
-					break;
-
-				default:
-					break;
-			}
-		}
-
-		vTaskDelay(pdMS_TO_TICKS(500));
-	}
-}
-
-
-
 // This task displays traffic light system and car on the road by updating the LEDs using the shift register
-void dd_system_monitor_task(void *pvParameters)
+void dd_task_monitor(void *pvParameters)
 {
+	vTaskDelay(10000);
 	while(1)
 	{
-		dd_system_monitor_display_active_task_list();
-		dd_system_monitor_display_completed_task_list();
-		dd_system_monitor_display_overdue_task_list();
-		vTaskDelay(pdMS_TO_TICKS(490));
-	}
-}
-
-void dd_system_monitor_display_active_task_list(void)
-{
-	dd_message_t active_task_list_message;
-
-	get_active_dd_task_list();
-
-	if(xQueueReceive(dd_monitor_message_queue, &active_task_list_message, portMAX_DELAY) == pdTRUE)
-	{
-		printf("Active Tasks: \n%s\n", (char*)(active_task_list_message.message_data));
-	}
-}
-
-void dd_system_monitor_display_completed_task_list(void)
-{
-	dd_message_t completed_task_list_message;
-
-	get_completed_dd_task_list();
-
-	if(xQueueReceive(dd_monitor_message_queue, &completed_task_list_message, portMAX_DELAY) == pdTRUE)
-	{
-		printf("Active Tasks: \n%s\n", (char*)(completed_task_list_message.message_data));
-	}
-}
-
-void dd_system_monitor_display_overdue_task_list(void)
-{
-	dd_message_t overdue_task_list_message;
-
-	get_overdue_dd_task_list();
-
-	if(xQueueReceive(dd_monitor_message_queue, &overdue_task_list_message, portMAX_DELAY) == pdTRUE)
-	{
-		printf("Active Tasks: \n%s\n", (char*)(overdue_task_list_message.message_data));
+		printf("dd_task_monitor: Active Task List\n");
+		pGetActiveDDTaskList();
+//		printf("dd_task_monitor: Completed Task List\n");
+//		pGetCompletedDDTaskList();
+//		printf("dd_task_monitor: Overdue Task List\n");
+//		pGetOverdueDDTaskList();
+		//vTaskDelay(100);
 	}
 }
 
