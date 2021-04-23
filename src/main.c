@@ -26,36 +26,36 @@
 
 #define HYPER_PERIOD						15000
 
-# define TASK_LOWEST_PRIORITY      			1
-# define TASK_MONITOR_PRIORITY				2
-# define TASK_EXECUTION_PRIORITY 			3
-# define TASK_GENERATOR_PRIORITY      		4
-# define TASK_SCHEDULER_PRIORITY      		5
+# define TASK_LOWEST_PRIORITY      				1
+# define TASK_MONITOR_PRIORITY					2
+# define TASK_EXECUTION_PRIORITY 				3
+# define TASK_GENERATOR_PRIORITY      				4
+# define TASK_SCHEDULER_PRIORITY      				5
 
-#define schedulerQUEUE_LENGTH				20
-#define monitorQUEUE_LENGTH 				3
-#define taskgeneratorQUEUE_LENGTH			3
+#define schedulerQUEUE_LENGTH					20
+#define monitorQUEUE_LENGTH 					3
+#define taskgeneratorQUEUE_LENGTH				3
 #define taskQUEUE_LENGTH					1
 
-#define TASK1_ID							1
-#define TASK2_ID							2
-#define TASK3_ID							3
+#define TASK1_ID						1
+#define TASK2_ID						2
+#define TASK3_ID						3
 #define APERIODIC_TASK_ID					4
 
-#define TASK_1_EXECUTION_TIME				950
-#define TASK_2_EXECUTION_TIME				1500
-#define TASK_3_EXECUTION_TIME				2500
-#define APERIODIC_TASK_EXECUTION_TIME		5000
+#define TASK_1_EXECUTION_TIME					950
+#define TASK_2_EXECUTION_TIME					1500
+#define TASK_3_EXECUTION_TIME					2500
+#define APERIODIC_TASK_EXECUTION_TIME				5000
 
 #define TASK_1_PERIOD						9000
 #define TASK_2_PERIOD						5000
 #define TASK_3_PERIOD						7500
-#define APERIODIC_TASK_PERIOD				3000
+#define APERIODIC_TASK_PERIOD					3000
 
 #define	TASK_1_TIMER						1
 #define	TASK_2_TIMER						2
 #define	TASK_3_TIMER						3
-#define	APERIODIC_TASK_TIMER				4
+#define	APERIODIC_TASK_TIMER					4
 
 // Deadline-Driven task data structure
 typedef enum task_type
